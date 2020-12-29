@@ -5,7 +5,7 @@ class App extends StatelessWidget{
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData.dark(),
-      title: 'LOG IN',
+      title: 'Secure Notebook',
       home: Scaffold(
         body: LoginScreen(),
       ),

@@ -1,5 +1,5 @@
 import 'package:hive/hive.dart';
-import 'package:mobileSystems/src/note/note.dart';
+import 'package:MobileSystemsPass/src/note/note.dart';
 import 'package:intl/intl.dart' as intl;
 
 class Code {

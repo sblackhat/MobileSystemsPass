@@ -1,6 +1,7 @@
+import 'package:MobileSystemsPass/src/screens/sign_up.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:MobileSystemsPass/src/bloc/login_bloc.dart';
+import 'package:MobileSystemsPass/src/bloc/bloc_log_in.dart';
 import 'package:MobileSystemsPass/src/captcha/captcha.dart';
 import 'package:MobileSystemsPass/src/screens/notebook_screen.dart';
 
@@ -15,6 +16,7 @@ class _LoginScreenState extends State<LoginScreen>{
   LoginBloc _bloc = LoginBloc();
   TextEditingController _passController = TextEditingController();
   TextEditingController _userController = TextEditingController();
+  //bool _isUserVerified = false;
 
   @override
   void initState(){
@@ -24,16 +26,16 @@ class _LoginScreenState extends State<LoginScreen>{
   @override
   Widget build(BuildContext context){
     return Scaffold(
-      appBar: AppBar(title: Text('BlackNotebook Log in')),
+      appBar: AppBar(title: Text('Secure Black Notebook')),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: ListView(
           children: [
-          //Username field
+          //email field
           StreamBuilder<String>( 
-            stream: _bloc.userNameStream, 
+            stream: _bloc.emailStream, 
             builder: (context, snapshot) { 
-              return userNameField(context, snapshot);
+              return emailField(context, snapshot);
             }),
 
 
@@ -56,25 +58,32 @@ class _LoginScreenState extends State<LoginScreen>{
           }),
 
           //Add some padding
-          Padding(padding: EdgeInsets.only(top:25.0, bottom: 25.0)),
+          Padding(padding: EdgeInsets.only(top:30.0)),
 
           //CAPTCHA
           recaptchaButton(),
+
+          //Add some padding
+          Padding(padding: EdgeInsets.only(top:30.0)),
+
+          //SIGN UP
+          _registerButton(),
+
           ],),
           ),
       );
       
   }
 
-  Widget userNameField(BuildContext context, dynamic snapshot){
+  Widget emailField(BuildContext context, dynamic snapshot){
     return TextField( 
             controller: _userController,
             decoration: InputDecoration( 
-            labelText: 'Username', 
+            labelText: 'Email', 
             errorText: snapshot.error, 
             ), 
             onChanged: (String value) { 
-            _bloc.userOnChange(value); 
+            _bloc.emailOnChange(value); 
             }, 
             ); 
   }
@@ -123,8 +132,6 @@ class _LoginScreenState extends State<LoginScreen>{
     );
   }
 
-  }
-
   Widget _submitButton(context, snapshot){
      
       return RaisedButton( 
@@ -144,9 +151,9 @@ class _LoginScreenState extends State<LoginScreen>{
       barrierDismissible: false, 
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Wrong Password/Username'),
+          title: Text('Wrong Password/email'),
           content: SingleChildScrollView(
-            child: Text('You have introduced the wrong password/username $counter times!'),
+            child: Text('You have introduced the wrong password/email $counter times!'),
           ),
           actions: <Widget>[
             TextButton(
@@ -187,17 +194,17 @@ Future<void> _showNotVerified() async {
   Future<void> _onPressSubmit(snapshot,context) async {
       if(snapshot.hasData && snapshot.data){
         //Check if the user has verified the CAPTCHA
-        if(_bloc.verify){
+        if(_bloc.getVerify){
           //On true check the password
           var result = await _bloc.submitLogin();
 
           if(result){
             _goToNoteScreen(context); //Go to Notebook on true
-            _bloc.verify = false; //The captcha is no longer verified
+            _bloc.setVerify = false; //The captcha is no longer verified
           }else{
             //Show the wrongPassword dialog
             _showWrongPass();
-          _bloc.verify = false; //Make the user verify himself again in order to prevent bruteforce
+          _bloc.setVerify = false; //Make the user verify himself again in order to prevent bruteforce
           }
         //Show the not verified alertDialog
         }else 
@@ -213,13 +220,17 @@ Future<void> _showNotVerified() async {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
+                Text("Show that you are not a bot"),
                 RaisedButton(
-                  child: Text("SHOW ReCAPTCHA"),
-                  onPressed: () {
-                    _goToCaptchaScreen(context);
-                  },
+                  child: Text(_bloc.getVerifyText),
+                  color: Colors.black38,
+                  textColor: Colors.white,
+                  disabledColor: Colors.lightGreenAccent,
+                  disabledTextColor: Colors.white,
+                  onPressed: (){
+                    if(!_bloc.getVerify) return _goToCaptchaScreen(context); else return null;
+                  } ,
                 ),
-                Text("Click on the CAPTCHA to verify"),
               ],
             ),
           )
@@ -238,12 +249,36 @@ Future<void> _showNotVerified() async {
      Navigator.push(context, MaterialPageRoute(builder: (context) => captcha));
    }
 
+   _goToSignUpScreen(context){
+     Navigator.push(context, MaterialPageRoute(builder: (context) => SignUp()));
+   }
+
 
   _clearLoginScreen(){
-    //_bloc.clearStream();
      _userController.clear();
      _passController.clear();
   }
   
+  Widget _registerButton(){
+    return Stack(
+    children: <Widget>[
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text("Not registered yet? Sign up"),
+                RaisedButton(
+                  child: Text("SIGN UP"),
+                  onPressed: () {
+                    _goToSignUpScreen(context);
+                  },
+                ),
+                
+              ],
+            ),
+          )
+        ]
+     );
+  }
 }
  

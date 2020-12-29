@@ -1,18 +1,19 @@
+import 'package:MobileSystemsPass/src/bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_recaptcha_v2/flutter_recaptcha_v2.dart';
-import 'package:mobileSystems/src/bloc/login_bloc.dart';
+import 'package:MobileSystemsPass/src/bloc/bloc_log_in.dart';
 
 class CaptchaPage extends StatefulWidget {
   CaptchaPage({Key key, this.title}) : super(key: key);
 
   // ignore: avoid_init_to_null
-  LoginBloc _b = null;
+  Bloc _b = null;
   final String title;
 
   @override
   _CaptchaState createState() => _CaptchaState(_b);
 
-  void loginBloc(LoginBloc bloc) {
+  void setBloc(Bloc bloc) {
     _b = bloc;
   }
 }
@@ -22,7 +23,7 @@ class _CaptchaState extends State<CaptchaPage> {
   _CaptchaState(this._bloc);
   String _verifyText = "Not verified yet";
 
-  final LoginBloc _bloc;
+  final Bloc _bloc;
   RecaptchaV2Controller recaptchaV2Controller = RecaptchaV2Controller();
 
   @override
@@ -57,11 +58,13 @@ class _CaptchaState extends State<CaptchaPage> {
             onVerifiedSuccessfully: (success) {
               setState(() {
                 if (success) {
-                  _bloc.verify = true;
+                  _bloc.setVerify = true;
                   _verifyText = "You have been verified!!";
+                  _bloc.setVerifyText = "You are not a robot";
                 } else {
-                  _bloc.verify = false;
-                  _verifyText = "Try to verify again!";
+                  _bloc.setVerify = false;
+                  _bloc.setVerifyText = "Show ReCAPTCHA";
+                  _verifyText = "Try again to verify!";
                 }
               });
             },

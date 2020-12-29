@@ -2,11 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:mobileSystems/src/note/note.dart';
-import 'package:mobileSystems/src/screens/add_note.dart';
-import 'package:mobileSystems/src/screens/edit_check_note.dart';
-import 'package:mobileSystems/src/screens/edit_note.dart';
-import 'package:mobileSystems/src/screens/edit_text_note.dart';
+import 'package:MobileSystemsPass/src/note/note.dart';
+import 'package:MobileSystemsPass/src/screens/add_note.dart';
+import 'package:MobileSystemsPass/src/screens/edit_check_note.dart';
+import 'package:MobileSystemsPass/src/screens/edit_note.dart';
+import 'package:MobileSystemsPass/src/screens/edit_text_note.dart';
 
 class NoteBookScreen extends StatelessWidget {
   

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:mobileSystems/src/functions/code.dart';
-import 'package:mobileSystems/src/note/note.dart';
+import 'package:MobileSystemsPass/src/functions/code.dart';
+import 'package:MobileSystemsPass/src/note/note.dart';
 
 class EditTextNote extends StatefulWidget {
   final int noteParent;
