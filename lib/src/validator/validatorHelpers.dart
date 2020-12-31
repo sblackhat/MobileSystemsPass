@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-import 'package:email_validator/email_validator.dart';
 
 /// Creates a hexdecimal representation of the given [bytes].
 String formatBytesAsHexString(Uint8List bytes) {
@@ -10,8 +9,4 @@ String formatBytesAsHexString(Uint8List bytes) {
   }
   return result.toString();
 }
-
- bool validateEmail(String email){
-    return EmailValidator.validate(email);
-  }
 

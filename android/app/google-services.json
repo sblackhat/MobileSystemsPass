@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "236332402795",
+    "project_id": "mobilesystems",
+    "storage_bucket": "mobilesystems.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:236332402795:android:057c07fb0888a10a92c92e",
+        "android_client_info": {
+          "package_name": "com.sblackhat.MobileSystemsPass"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "236332402795-pr9u5pagnfdjpeqgnrvonbf3aaf816vv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sblackhat.MobileSystemsPass",
+            "certificate_hash": "f438ac0131309c81f048811431d9ac5926b86abb"
+          }
+        },
+        {
+          "client_id": "236332402795-8hj58l6614piu1uer5gddijm9vf2ipv4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDuH3x_S4JmhQqL18dGX0DDVph_RdPFNeg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "236332402795-8hj58l6614piu1uer5gddijm9vf2ipv4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

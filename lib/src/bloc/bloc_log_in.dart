@@ -16,10 +16,10 @@ class LoginBloc extends Bloc with Matcher {
   //Object constructor
   LoginBloc(){
 
-       emailStream.listen((value){ 
-        super.validemail.sink.add(true); 
+       userNameStream.listen((value){ 
+        super.validUserName.sink.add(true); 
         }, onError:(error) { 
-      super.validemail.sink.add(false); 
+      super.validUserName.sink.add(false); 
       });
 
       passwordStream.listen((value){ 
@@ -28,7 +28,7 @@ class LoginBloc extends Bloc with Matcher {
         _validPass.sink.add(false); 
     }); 
 
-    _validator.init();
+    Validator.init();
   }
 
   //Counter getter
@@ -45,7 +45,7 @@ class LoginBloc extends Bloc with Matcher {
     return StreamTransformer<String, String>.fromHandlers( 
     handleData: (String password, EventSink<String> sink) { 
       //Check if the password is at leat 20 characters long
-    if (Matcher.simpleMatcher(password) ){ 
+    if (password.length > 20){ 
         sink.add(password); 
     } else if (password.isEmpty || password == null){
       //If the password field is empty 
@@ -58,7 +58,7 @@ class LoginBloc extends Bloc with Matcher {
     ); 
  } 
 
-  Stream<bool> get submitValid => Rx.combineLatest2(super.validemail.stream, _validPass.stream, (isValidUser, isPasswordValid) { 
+  Stream<bool> get submitValid => Rx.combineLatest2(super.validUserName.stream, _validPass.stream, (isValidUser, isPasswordValid) { 
         if( isValidUser is bool && isPasswordValid is bool) { 
             return isPasswordValid && isValidUser; 
         } 
@@ -68,7 +68,7 @@ class LoginBloc extends Bloc with Matcher {
 
   Future<bool> submitLogin() async {
 
-      String result = await Validator.validatePassword(_passwordController.value, super.emailValue);
+      String result = await Validator.validatePassword(_passwordController.value, super.userNameValue);
 
       if(result == null){
         _counter = 0;

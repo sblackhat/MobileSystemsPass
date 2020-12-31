@@ -33,7 +33,7 @@ class _LoginScreenState extends State<LoginScreen>{
           children: [
           //email field
           StreamBuilder<String>( 
-            stream: _bloc.emailStream, 
+            stream: _bloc.userNameStream, 
             builder: (context, snapshot) { 
               return emailField(context, snapshot);
             }),
@@ -83,7 +83,7 @@ class _LoginScreenState extends State<LoginScreen>{
             errorText: snapshot.error, 
             ), 
             onChanged: (String value) { 
-            _bloc.emailOnChange(value); 
+            _bloc.userNameOnChange(value); 
             }, 
             ); 
   }
@@ -103,34 +103,12 @@ class _LoginScreenState extends State<LoginScreen>{
             }, 
       ); 
     }
-
-  Widget _forgetPass(){
-    TextStyle defaultStyle = TextStyle(color: Colors.grey, fontSize: 20.0);
-    TextStyle linkStyle = TextStyle(color: Colors.blue);
-    return RichText(
-      text: TextSpan(
-        style: defaultStyle,
-        children: <TextSpan>[
-          TextSpan(text: 'By clicking Sign Up, you agree to our '),
-          TextSpan(
-              text: 'Terms of Service',
-              style: linkStyle,
-              recognizer: TapGestureRecognizer()
-                ..onTap = () {
-                  print('Terms of Service"');
-                }),
-          TextSpan(text: ' and that you have read our '),
-          TextSpan(
-              text: 'Privacy Policy',
-              style: linkStyle,
-              recognizer: TapGestureRecognizer()
-                ..onTap = () {
-                  print('Privacy Policy"');
-                }),
-        ],
-      ),
-    );
-  }
+/*
+  Widget _forgetPassword(){
+    return TextButton(
+      child: Text('Forgot Password?'),
+      onPressed: () => Navigator.of(context).push(ForgetPassword()), );
+  }*/
 
   Widget _submitButton(context, snapshot){
      
@@ -245,7 +223,7 @@ Future<void> _showNotVerified() async {
 
    _goToCaptchaScreen(context){
      var captcha = CaptchaPage();
-     captcha.loginBloc(_bloc);
+     captcha.setBloc(_bloc);
      Navigator.push(context, MaterialPageRoute(builder: (context) => captcha));
    }
 
