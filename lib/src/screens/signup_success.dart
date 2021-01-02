@@ -1,11 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class HomeScreen extends StatelessWidget {
+class RegisterScreen extends StatelessWidget {
   
   final User user;
   
-  HomeScreen({this.user});
+ RegisterScreen({this.user});
   
   @override
   Widget build(BuildContext context) {
@@ -19,6 +19,11 @@ class HomeScreen extends StatelessWidget {
             Text("You are Logged in succesfully", style: TextStyle(color: Colors.lightBlue, fontSize: 32),),
             SizedBox(height: 16,),
             Text("${user.phoneNumber}", style: TextStyle(color: Colors.grey, ),),
+            RaisedButton(
+              child: Text("Sign In"),
+              textColor: Colors.white,
+              color: Colors.blue,
+              onPressed: () => Navigator.pop(context)),
           ],
         ),
       ),

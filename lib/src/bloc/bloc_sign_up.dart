@@ -6,7 +6,7 @@ import 'package:rxdart/rxdart.dart';
 
 class SignUpBloc extends Bloc with Matcher {
   //Variable declaration
-  static bool _verify = true;
+  static bool _verify = false;
   static bool _success = false;
   static String _verifyText = "I am not a robot";
   static final PublishSubject<bool> _validPhoneNumber = PublishSubject<bool>();
@@ -130,8 +130,15 @@ class SignUpBloc extends Bloc with Matcher {
         return false;
       });
 
-  Future<bool> register() async {
-    return Validator.registerUserName(super.userNameValue,_passwordRegistrationController.value, _phoneNumberController.value);
+  void register() => Validator.registerUserName(super.userNameValue,_passwordRegistrationController.value, _phoneNumberController.value);
+
+  bool isRegistered() {
+     Validator.isRegistered(super.userNameValue).then((value) {
+    return value;
+  }, onError: (error) {
+    print(error);
+  });
+  return false;
   }
 
   @override

@@ -79,7 +79,7 @@ class _LoginScreenState extends State<LoginScreen>{
     return TextField( 
             controller: _userController,
             decoration: InputDecoration( 
-            labelText: 'Email', 
+            labelText: 'User', 
             errorText: snapshot.error, 
             ), 
             onChanged: (String value) { 

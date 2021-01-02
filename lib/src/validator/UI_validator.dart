@@ -1,8 +1,5 @@
 import 'dart:async';
 import 'dart:typed_data';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:MobileSystemsPass/src/Mixin/Matcher.dart';
 import 'package:pointycastle/pointycastle.dart';
@@ -15,7 +12,6 @@ class Validator {
   static final int _iterations = 16384;
   static final int _blocksize = 32;
   static final int _paralelization = 1;
-  static final FirebaseAuth _auth = FirebaseAuth.instance;
 
   //Initalize the Keyderivation function
   static init() async {
@@ -61,11 +57,15 @@ class Validator {
       return _wrongResult;
   }
 
-  static Future<void> _writePass(String password, String email) async {
+   /*
+   Functions below are used in the registration process
+                                                        */
+
+  static Future<void> _writePass(String password, String username) async {
     //Write new salt
     //Create a new salt every time the password changes
     final rnd = new FortunaRandom()..seed(new KeyParameter(new Uint8List(32)));
-    //64 byte salt
+    //256 bit salt
     String salt = formatBytesAsHexString(rnd.nextBytes(32));
     //Store the salt
     _secure.write(key: "salt", value: salt);
@@ -73,17 +73,18 @@ class Validator {
     Validator.init();
     //Get the passHash
     final hashed = Validator._getHashedPass(password);
-    _secure.write(key: email, value: hashed);
+    _secure.write(key: username, value: hashed);
     //Write the email
-    _secure.write(key: "email", value: email);
+    _secure.write(key: "username", value: username);
   }
 
   static Future<bool> isRegistered(String userName){
     return _secure.containsKey(key: "username");
   }
 
-  static Future<bool> registerUserName(
-      String email, String password, String phone) async {
-    
+  static void registerUserName(
+      String username, String password, String phone) async {
+      _secure.write(key: "phone", value: phone);
+      _writePass(password, username);
   }
 }
