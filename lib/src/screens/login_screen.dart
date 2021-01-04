@@ -1,5 +1,4 @@
 import 'package:MobileSystemsPass/src/screens/sign_up.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:MobileSystemsPass/src/bloc/bloc_log_in.dart';
 import 'package:MobileSystemsPass/src/captcha/captcha.dart';
@@ -35,7 +34,7 @@ class _LoginScreenState extends State<LoginScreen>{
           StreamBuilder<String>( 
             stream: _bloc.userNameStream, 
             builder: (context, snapshot) { 
-              return emailField(context, snapshot);
+              return  userNameField(context, snapshot);
             }),
 
 
@@ -75,7 +74,7 @@ class _LoginScreenState extends State<LoginScreen>{
       
   }
 
-  Widget emailField(BuildContext context, dynamic snapshot){
+  Widget userNameField(BuildContext context, dynamic snapshot){
     return TextField( 
             controller: _userController,
             decoration: InputDecoration( 
@@ -103,12 +102,6 @@ class _LoginScreenState extends State<LoginScreen>{
             }, 
       ); 
     }
-/*
-  Widget _forgetPassword(){
-    return TextButton(
-      child: Text('Forgot Password?'),
-      onPressed: () => Navigator.of(context).push(ForgetPassword()), );
-  }*/
 
   Widget _submitButton(context, snapshot){
      
@@ -123,7 +116,6 @@ class _LoginScreenState extends State<LoginScreen>{
       );
   }
   Future<void> _showWrongPass() async {
-    final int counter  = _bloc.getCounter;
     return showDialog<void>(
       context: context,
       barrierDismissible: false, 
@@ -131,7 +123,7 @@ class _LoginScreenState extends State<LoginScreen>{
         return AlertDialog(
           title: Text('Wrong Password/email'),
           content: SingleChildScrollView(
-            child: Text('You have introduced the wrong password/email $counter times!'),
+            child: Text('You have introduced the wrong password/username!'),
           ),
           actions: <Widget>[
             TextButton(
@@ -173,7 +165,7 @@ Future<void> _showNotVerified() async {
       if(snapshot.hasData && snapshot.data){
         //Check if the user has verified the CAPTCHA
         if(_bloc.getVerify){
-          //On true check the password
+          //check the password
           var result = await _bloc.submitLogin();
 
           if(result){
@@ -258,5 +250,11 @@ Future<void> _showNotVerified() async {
         ]
      );
   }
+
+  @override
+ void dispose(){
+   super.dispose();
+ }
 }
- 
+
+

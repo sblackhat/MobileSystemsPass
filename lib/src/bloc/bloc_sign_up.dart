@@ -2,23 +2,23 @@ import 'dart:async';
 import 'package:MobileSystemsPass/src/Mixin/Matcher.dart';
 import 'package:MobileSystemsPass/src/bloc/bloc.dart';
 import 'package:MobileSystemsPass/src/validator/UI_validator.dart';
+import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:rxdart/rxdart.dart';
 
 class SignUpBloc extends Bloc with Matcher {
   //Variable declaration
-  static bool _verify = false;
   static bool _success = false;
-  static String _verifyText = "I am not a robot";
-  static final PublishSubject<bool> _validPhoneNumber = PublishSubject<bool>();
-  static final PublishSubject<bool> _validPassRegistration =
-      PublishSubject<bool>();
+  static final PublishSubject<bool> _validPassRegistration = PublishSubject<bool>();
+  static final PublishSubject<bool> _validUserName = PublishSubject<bool>();
   static final PublishSubject<bool> _validPassRepeat = PublishSubject<bool>();
+  static final  BehaviorSubject<String>_validPhone =  BehaviorSubject<String>();
+  static bool _phone = false;
   //Object constructor
   SignUpBloc() {
     userNameStream.listen((value) {
-      super.validUserName.sink.add(true);
+      _validUserName.sink.add(true);
     }, onError: (error) {
-      super.validUserName.sink.add(false);
+      _validUserName.sink.add(false);
     });
 
     passwordRegistrationStream.listen((value) {
@@ -32,30 +32,37 @@ class SignUpBloc extends Bloc with Matcher {
     }, onError: (error) {
       _validPassRepeat.sink.add(false);
     });
-
     Validator.init();
   }
 
-  //Verify setter
-  set setVerify(bool value) => _verify = value;
-  set setVerifyText(String value) => _verifyText = value;
-  set setSuccess(bool value) => _success = value;
-
-  //Verify getter
-  bool get getVerify => _verify;
-  String get getVerifyText => _verifyText;
   bool get getSuccess => _success;
 
-  //Set valid phone number
-  set validPhoneNumber(bool value) => _validPhoneNumber.sink.add(value);
+  set setPhoneNumber(bool phone) => _phone = phone;
 
-  final BehaviorSubject _phoneNumberController = BehaviorSubject<String>();
+  PublishSubject<bool> get validUserName => _validUserName;
 
-  //Stream that validates the password during registration
-  Stream<String> get phoneNumberStream =>
-      _phoneNumberController.stream.transform(_validatePhoneNumber());
-  Function(String) get phoneNumberOnChange => _phoneNumberController.sink.add;
-  String get phoneValue => _phoneNumberController.value;
+  final BehaviorSubject _userNameController = BehaviorSubject<String>(); 
+ 
+ Stream<String>   get userNameStream  => _userNameController.stream.transform(_validateUser()); 
+ Function(String) get userNameOnChange => _userNameController.sink.add;
+ set phoneNumberOnChange(String phone) => _validPhone.sink.add(phone);
+
+ StreamTransformer _validateUser() { 
+          return StreamTransformer<String, String>.fromHandlers( 
+          handleData: (String userName, EventSink<String> sink) { 
+          //Check if the email does not contain extrange characters 
+          if (Matcher.userName(userName)){ 
+          sink.add(userName); 
+          //Check if the userName field is empty
+          } else if (userName == null || userName.isEmpty){ 
+          sink.addError('Empty field'); 
+          } else { 
+          sink.addError('Enter a valid username'); 
+          
+          } 
+          } 
+          ); 
+ } 
 
   final BehaviorSubject _passwordRegistrationController =
       BehaviorSubject<String>();
@@ -76,13 +83,6 @@ class SignUpBloc extends Bloc with Matcher {
       _passwordRepeatController.stream.transform(_validateRepeatPassword());
   Function(String) get passwordRepeatOnChange =>
       _passwordRepeatController.sink.add;
-
-  StreamTransformer _validatePhoneNumber() {
-    return StreamTransformer<String, String>.fromHandlers(
-        handleData: (String phoneNumber, EventSink<String> sink) {
-      //Check the phone number
-    });
-  }
 
   StreamTransformer _validateRegistrationPassword() {
     return StreamTransformer<String, String>.fromHandlers(
@@ -119,36 +119,28 @@ class SignUpBloc extends Bloc with Matcher {
     });
   }
 
-  Stream<bool> get registerValid => Rx.combineLatest4(
-          super.validUserName.stream,
-          _validPassRegistration.stream,
-          _validPassRepeat.stream,
-          _validPhoneNumber, (a, b, c, d) {
-        if (a is bool && b is bool && c is bool && d is bool) {
-          return a && b && c && d;
-        }
-        return false;
-      });
 
-  void register() => Validator.registerUserName(super.userNameValue,_passwordRegistrationController.value, _phoneNumberController.value);
+  Stream<bool> get registerValid => Rx.combineLatest3(_validUserName.stream, _validPassRegistration.stream, _validPassRepeat.stream, (isValidUser, isPasswordValid, isRepeatValid) { 
+        if( isValidUser is bool && isPasswordValid is bool && isRepeatValid) { 
+            return isPasswordValid && isValidUser && isRepeatValid && _phone; 
+        } 
+        return false; 
+ });
+  
+  void register() => Validator.registerUserName(_userNameController.value,_passwordRegistrationController.value, _validPhone.value);
 
-  bool isRegistered() {
-     Validator.isRegistered(super.userNameValue).then((value) {
-    return value;
-  }, onError: (error) {
-    print(error);
-  });
-  return false;
+  Future<bool> isRegistered() async {
+    return await Validator.isRegistered(_userNameController.value);
   }
 
   @override
   void dispose() {
-    super.dispose();
-    _validPhoneNumber.close();
-    _phoneNumberController.close();
-    _validPassRegistration.close();
+     _validPassRegistration.close();
     _passwordRegistrationController.close();
     _passwordRepeatController.close();
     _validPassRepeat.close();
+    _validUserName.close();
+    _userNameController.close();
+    _validPhone.close();
   }
 }

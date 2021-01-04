@@ -19,6 +19,7 @@ class _SignUpState extends State<SignUp> {
   StreamController _timerStream = new StreamController<int>();
   int timerCounter;
   Timer _resendCodeTimer;
+  bool _init = true;
   //Controllers for the UI
   TextEditingController _passController = TextEditingController();
   TextEditingController _passRepeatController = TextEditingController();
@@ -28,13 +29,12 @@ class _SignUpState extends State<SignUp> {
   @override
   void initState() {
     _activeCounter();
-
     super.initState();
   }
 
   _activeCounter() {
     _resendCodeTimer = new Timer.periodic(Duration(seconds: 1), (Timer timer) {
-      if (_timerDuration - timer.tick > 0)
+      if (_timerDuration - timer.tick > 0 && !_init)
         _timerStream.sink.add(_timerDuration - timer.tick);
       else {
         _timerStream.sink.add(0);
@@ -55,16 +55,19 @@ class _SignUpState extends State<SignUp> {
             Text("Phone Number", style: TextStyle(fontSize: 12)),
 
             InternationalPhoneNumberInput(
-              onInputChanged: (PhoneNumber number) =>
-                  _bloc.phoneNumberOnChange(number.phoneNumber),
-              onInputValidated: (bool value) => _bloc.validPhoneNumber = value,
+              onInputChanged: (PhoneNumber phone){
+                _bloc.phoneNumberOnChange = phone.phoneNumber;
+                print(phone.phoneNumber);
+              },
+              onInputValidated: (bool value) {
+                _bloc.setPhoneNumber = true;
+              },
               selectorConfig: SelectorConfig(
                 selectorType: PhoneInputSelectorType.BOTTOM_SHEET,
               ),
               ignoreBlank: false,
               autoValidateMode: AutovalidateMode.always,
               selectorTextStyle: TextStyle(color: Colors.black),
-              initialValue: PhoneNumber(isoCode: "48"),
               textFieldController: _phoneNumberController,
               formatInput: false,
               keyboardType:
@@ -93,6 +96,10 @@ class _SignUpState extends State<SignUp> {
               },
             ),
 
+            Padding(
+              padding: EdgeInsets.only(top: 25),
+            ),
+
             //Repeat Password Field
             StreamBuilder<String>(
               stream: _bloc.passwordRepeatStream,
@@ -101,12 +108,17 @@ class _SignUpState extends State<SignUp> {
               },
             ),
 
+            Padding(
+              padding: EdgeInsets.only(top: 25),
+            ),
+
             //Register BUTTON
             StreamBuilder<bool>(
                 stream: _bloc.registerValid,
                 builder: (context, snapshot) {
-                  return _registerButton(context, snapshot);
+                  return _registerButton(context,snapshot);
                 }),
+            
 
             //Add some padding
             Padding(padding: EdgeInsets.only(top: 25.0, bottom: 25.0)),
@@ -164,7 +176,7 @@ class _SignUpState extends State<SignUp> {
     );
   }
 
-  Widget _registerButton(context, snapshot) {
+  Widget _registerButton(ctx,snap) {
     return StreamBuilder(
       stream: _timerStream.stream,
       builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -183,28 +195,29 @@ class _SignUpState extends State<SignUp> {
                                 ' Resend OTP in ${snapshot.hasData ? snapshot.data.toString() : 30} seconds '),
                           ],
                         )),
-              onPressed: snapshot.data == 0 ? () {
-                    _onPressRegister(snapshot, context);
-                  } : null,
+              onPressed: (snapshot.data == 0 && (snap.hasData && snap.data))
+                  ? () {
+                      _init = false;
+                      _onPressRegister();
+                    }
+                  : null,
             ));
       },
     );
   }
 
-  _onPressRegister(snapshot, context){
-    if (snapshot.hasData && snapshot.data == 0) {
-    //Check if the user has verified the CAPTCHA
-    if (_bloc.getVerify) {
-      var resul = "+34" + _phoneNumberController.value.text;
-      print(resul);
-      _registerUser(resul, context);
-      _timerStream.sink.add(30);
-      _activeCounter();
-    } else if (_bloc.isRegistered()) {
-      _showNotRegistered("You are already registered in this notebook");
-    } else
-      _showNotVerified();//Show the not verified alertDialog
-    }
+  _onPressRegister() async {
+      //Check if the user has verified the CAPTCHA
+      var registered = await _bloc.isRegistered();
+      if (_bloc.getVerify && ! registered) {
+        var resul = "+34" + _phoneNumberController.value.text;
+        _registerUser(resul, context);
+        _timerStream.sink.add(30);
+        _activeCounter();
+      } else if (registered) {
+        _showNotRegistered("You are already registered in this notebook");
+      } else
+        _showNotVerified(); //Show the not verified alertDialog
   }
 
   Future _registerUser(String mobile, BuildContext context) async {
@@ -240,31 +253,31 @@ class _SignUpState extends State<SignUp> {
     Navigator.push(context, MaterialPageRoute(builder: (context) => captcha));
   }
 
-   Widget recaptchaButton(){
-     return Stack(
-        children: <Widget>[
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Text("Show that you are not a bot"),
-                RaisedButton(
-                  child: Text(_bloc.getVerifyText),
-                  color: Colors.black38,
-                  textColor: Colors.white,
-                  disabledColor: Colors.lightGreenAccent,
-                  disabledTextColor: Colors.white,
-                  onPressed: (){
-                    if(!_bloc.getVerify) return _goToCaptchaScreen(context); else return null;
-                  } ,
-                ),
-              ],
+  Widget recaptchaButton() {
+    return Stack(children: <Widget>[
+      Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text("Show that you are not a bot"),
+            RaisedButton(
+              child: Text(_bloc.getVerifyText),
+              color: Colors.black38,
+              textColor: Colors.white,
+              disabledColor: Colors.lightGreenAccent,
+              disabledTextColor: Colors.white,
+              onPressed: () {
+                if (!_bloc.getVerify)
+                  return _goToCaptchaScreen(context);
+                else
+                  return null;
+              },
             ),
-          )
-        ]
-     );
-    }
-  
+          ],
+        ),
+      )
+    ]);
+  }
 
   Future<void> _showNotVerified() async {
     return showDialog<void>(
@@ -344,8 +357,8 @@ class _SignUpState extends State<SignUp> {
                       await auth.signInWithCredential(phoneAuthCredential);
                       // Sign the user in with the credential
                       _clearSignUp();
+                      _bloc.register();
                       Navigator.of(context).pop();
-                      dispose();
                       Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
@@ -361,12 +374,13 @@ class _SignUpState extends State<SignUp> {
                           message = "Wrong OTP code";
                           break;
                         case 'A network error (such as timeout, interrupted connection or unreachable host) has occurred.':
-                          message = "Cannot stablish connection with the server";
+                          message =
+                              "Cannot stablish connection with the server";
                           break;
                         default:
                           message = e.message;
                       }
-                       Navigator.of(context).pop();
+                      Navigator.of(context).pop();
                       _showNotRegistered(message);
                     }
                   },
@@ -380,11 +394,5 @@ class _SignUpState extends State<SignUp> {
     _passController.clear();
     _passRepeatController.clear();
     _userNameController.clear();
-  }
-
-  @override
-  void dispose() {
-    _timerStream.close();
-    super.dispose();
   }
 }

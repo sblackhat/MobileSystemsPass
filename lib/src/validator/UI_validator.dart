@@ -8,9 +8,9 @@ import 'validatorHelpers.dart';
 
 class Validator {
   static final _secure = FlutterSecureStorage();
-  static final _derivator = KeyDerivator("Scrypt");
-  static final int _iterations = 16384;
-  static final int _blocksize = 32;
+  static final _derivator = KeyDerivator("scrypt");
+  static final int _iterations = 128;
+  static final int _blocksize = 8;
   static final int _paralelization = 1;
 
   //Initalize the Keyderivation function
@@ -29,9 +29,10 @@ class Validator {
     }
   }
 
-  static _getHashedPass(String password) {
+  static String _getHashedPass(String password) {
+    Uint8List list = new Uint8List.fromList(password.codeUnits);
     final bytes =
-        _derivator.process(new Uint8List.fromList(password.codeUnits));
+        _derivator.process(list);
     return formatBytesAsHexString(bytes);
   }
 
@@ -39,22 +40,24 @@ class Validator {
     return await _secure.read(key: "salt");
   }
 
-  static Future<String> validatePassword(String password, String user) async {
-    final String _wrongResult = 'Wrong password/email';
+  static Future<bool> validatePassword(String password, String username) async {
     //Initialize the cipher
     Validator.init();
     //Check if the password has any not allowed character and
-    //validate the email of the user
+    //validate the username of the user
     if (Matcher.pass(password)) {
       final hash = _getHashedPass(password);
-      final stored = _secure.read(key: user);
+      final stored = await _secure.read(key: username);
+      final user = await _secure.read(key: "username");
+      final map = await _secure.readAll();
+      map.forEach((key, value) { print("key $key and value $value");});
       //Check the stored hashed key and the input key
       if (stored != null && hash == stored)
-        return null;
+        return true;
       else
-        return _wrongResult;
+        return false;
     } else
-      return _wrongResult;
+      return false;
   }
 
    /*
@@ -70,12 +73,12 @@ class Validator {
     //Store the salt
     _secure.write(key: "salt", value: salt);
     //Init the cipher
-    Validator.init();
+    await Validator.init();
     //Get the passHash
     final hashed = Validator._getHashedPass(password);
-    _secure.write(key: username, value: hashed);
-    //Write the email
-    _secure.write(key: "username", value: username);
+    await _secure.write(key: username, value: hashed);
+    final map = await _secure.readAll();
+      map.forEach((key, value) { print("key $key and value $value");});
   }
 
   static Future<bool> isRegistered(String userName){
@@ -84,6 +87,7 @@ class Validator {
 
   static void registerUserName(
       String username, String password, String phone) async {
+      _secure.write(key: "username", value: username);
       _secure.write(key: "phone", value: phone);
       _writePass(password, username);
   }

@@ -6,10 +6,11 @@ import 'package:rxdart/rxdart.dart';
 
 class LoginBloc extends Bloc with Matcher {
   //Variables declaration in the BLOC
-  static int _counter = 0;
   
   static final PublishSubject<bool> _validPass = PublishSubject<bool>();
- 
+
+  static final PublishSubject<bool> _validUserName = PublishSubject<bool>();
+
   static final Validator _validator = Validator();
  
 
@@ -17,9 +18,9 @@ class LoginBloc extends Bloc with Matcher {
   LoginBloc(){
 
        userNameStream.listen((value){ 
-        super.validUserName.sink.add(true); 
+        _validUserName.sink.add(true); 
         }, onError:(error) { 
-      super.validUserName.sink.add(false); 
+      _validUserName.sink.add(false); 
       });
 
       passwordStream.listen((value){ 
@@ -31,8 +32,31 @@ class LoginBloc extends Bloc with Matcher {
     Validator.init();
   }
 
-  //Counter getter
-  int get getCounter => _counter;
+
+  PublishSubject<bool> get validUserName => _validUserName;
+
+  final BehaviorSubject _userNameController = BehaviorSubject<String>(); 
+ 
+ Stream<String>   get userNameStream  => _userNameController.stream.transform(_validateUser()); 
+ Function(String) get userNameOnChange => _userNameController.sink.add;
+
+ StreamTransformer _validateUser() { 
+          return StreamTransformer<String, String>.fromHandlers( 
+          handleData: (String userName, EventSink<String> sink) { 
+          //Check if the email does not contain extrange characters 
+          if (Matcher.userName(userName)){ 
+          sink.add(userName); 
+          //Check if the userName field is empty
+          } else if (userName == null || userName.isEmpty){ 
+          sink.addError('Empty field'); 
+          } else { 
+          sink.addError('Enter a valid username'); 
+          
+          } 
+          } 
+          ); 
+ } 
+
 
   //Password controller
   final BehaviorSubject _passwordController = BehaviorSubject<String>(); 
@@ -58,7 +82,7 @@ class LoginBloc extends Bloc with Matcher {
     ); 
  } 
 
-  Stream<bool> get submitValid => Rx.combineLatest2(super.validUserName.stream, _validPass.stream, (isValidUser, isPasswordValid) { 
+  Stream<bool> get submitValid => Rx.combineLatest2(_validUserName.stream, _validPass.stream, (isValidUser, isPasswordValid) { 
         if( isValidUser is bool && isPasswordValid is bool) { 
             return isPasswordValid && isValidUser; 
         } 
@@ -68,22 +92,16 @@ class LoginBloc extends Bloc with Matcher {
   
   Future<bool> submitLogin() async {
 
-      String result = await Validator.validatePassword(_passwordController.value, super.userNameValue);
+      bool result = await Validator.validatePassword(_passwordController.value, _userNameController.value);
 
-      if(result == null){
-        _counter = 0;
-        return true;
-      }else if(super.getVerify){
-         _counter++;
-         return false;
-      }
-    return false;
+      return result;
     }
 
     void dispose(){  
-      super.dispose();
       _passwordController.close();  
       _validPass.close(); 
+      _userNameController.close();
+      _validUserName.close();
     } 
     
  }
