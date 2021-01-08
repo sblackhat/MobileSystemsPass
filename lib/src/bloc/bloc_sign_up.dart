@@ -1,18 +1,19 @@
 import 'dart:async';
 import 'package:MobileSystemsPass/src/Mixin/Matcher.dart';
-import 'package:MobileSystemsPass/src/bloc/bloc.dart';
 import 'package:MobileSystemsPass/src/validator/UI_validator.dart';
-import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:rxdart/rxdart.dart';
 
-class SignUpBloc extends Bloc with Matcher {
+class SignUpBloc with Matcher {
   //Variable declaration
+  static bool _verify = false;
+  static String _verifyText = "I am not a robot";
   static bool _success = false;
   static final PublishSubject<bool> _validPassRegistration = PublishSubject<bool>();
   static final PublishSubject<bool> _validUserName = PublishSubject<bool>();
   static final PublishSubject<bool> _validPassRepeat = PublishSubject<bool>();
   static final  BehaviorSubject<String>_validPhone =  BehaviorSubject<String>();
   static bool _phone = false;
+  
   //Object constructor
   SignUpBloc() {
     userNameStream.listen((value) {
@@ -34,6 +35,14 @@ class SignUpBloc extends Bloc with Matcher {
     });
     Validator.init();
   }
+
+  //Verify setter
+  set setVerify(bool value) => _verify = value;
+  set setVerifyText(String value) => _verifyText = value;
+
+  //Verify getter
+  bool get getVerify => _verify;
+  String get getVerifyText => _verifyText;
 
   bool get getSuccess => _success;
 
@@ -130,7 +139,7 @@ class SignUpBloc extends Bloc with Matcher {
   void register() => Validator.registerUserName(_userNameController.value,_passwordRegistrationController.value, _validPhone.value);
 
   Future<bool> isRegistered() async {
-    return await Validator.isRegistered(_userNameController.value);
+    return await Validator.isRegistered();
   }
 
   @override

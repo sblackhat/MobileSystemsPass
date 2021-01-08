@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'package:MobileSystemsPass/src/Mixin/Matcher.dart';
-import 'package:MobileSystemsPass/src/bloc/bloc.dart';
 import 'package:MobileSystemsPass/src/validator/UI_validator.dart';
 import 'package:rxdart/rxdart.dart';
 
-class LoginBloc extends Bloc with Matcher {
+class LoginBloc with Matcher {
   //Variables declaration in the BLOC
   
   static final PublishSubject<bool> _validPass = PublishSubject<bool>();
@@ -32,13 +31,14 @@ class LoginBloc extends Bloc with Matcher {
     Validator.init();
   }
 
-
   PublishSubject<bool> get validUserName => _validUserName;
 
   final BehaviorSubject _userNameController = BehaviorSubject<String>(); 
  
  Stream<String>   get userNameStream  => _userNameController.stream.transform(_validateUser()); 
  Function(String) get userNameOnChange => _userNameController.sink.add;
+
+  Future<String> getPhone() => Validator.getPhone();
 
  StreamTransformer _validateUser() { 
           return StreamTransformer<String, String>.fromHandlers( 
@@ -96,6 +96,10 @@ class LoginBloc extends Bloc with Matcher {
 
       return result;
     }
+  
+   Future<bool> isRegistered() async {
+    return await Validator.isRegistered();
+  }
 
     void dispose(){  
       _passwordController.close();  

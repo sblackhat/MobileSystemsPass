@@ -1,4 +1,4 @@
-import 'package:MobileSystemsPass/src/bloc/bloc.dart';
+import 'package:MobileSystemsPass/src/bloc/bloc_sign_up.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_recaptcha_v2/flutter_recaptcha_v2.dart';
 
@@ -6,13 +6,13 @@ class CaptchaPage extends StatefulWidget {
   CaptchaPage({Key key, this.title}) : super(key: key);
 
   // ignore: avoid_init_to_null
-  Bloc _b = null;
+  SignUpBloc _b = null;
   final String title;
 
   @override
   _CaptchaState createState() => _CaptchaState(_b);
 
-  void setBloc(Bloc bloc) {
+  void setBloc(SignUpBloc bloc) {
     _b = bloc;
   }
 }
@@ -22,7 +22,7 @@ class _CaptchaState extends State<CaptchaPage> {
   _CaptchaState(this._bloc);
   String _verifyText = "Not verified yet";
 
-  final Bloc _bloc;
+  final SignUpBloc _bloc;
   RecaptchaV2Controller recaptchaV2Controller = RecaptchaV2Controller();
 
   @override

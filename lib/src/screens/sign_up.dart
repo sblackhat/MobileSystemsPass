@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:MobileSystemsPass/src/Mixin/helpers.dart';
 import 'package:MobileSystemsPass/src/bloc/bloc_sign_up.dart';
 import 'package:MobileSystemsPass/src/screens/signup_success.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -12,7 +13,7 @@ class SignUp extends StatefulWidget {
   _SignUpState createState() => _SignUpState();
 }
 
-class _SignUpState extends State<SignUp> {
+class _SignUpState extends State<SignUp> with Helper{
   SignUpBloc _bloc = SignUpBloc();
   //Manage the OTP button
   static const _timerDuration = 30;
@@ -57,7 +58,6 @@ class _SignUpState extends State<SignUp> {
             InternationalPhoneNumberInput(
               onInputChanged: (PhoneNumber phone){
                 _bloc.phoneNumberOnChange = phone.phoneNumber;
-                print(phone.phoneNumber);
               },
               onInputValidated: (bool value) {
                 _bloc.setPhoneNumber = true;
@@ -365,21 +365,7 @@ class _SignUpState extends State<SignUp> {
                               builder: (context) =>
                                   RegisterScreen(user: auth.currentUser)));
                     } catch (e) {
-                      String message;
-                      switch (e.message) {
-                        case 'The SMS code has expired. Please re-send the verification code to try again':
-                          message = 'The SMS is no longer valid';
-                          break;
-                        case 'The sms verification code used to create the phone auth credential is invalid. Please resend the verification code sms and be sure use the verification code provided by the user.':
-                          message = "Wrong OTP code";
-                          break;
-                        case 'A network error (such as timeout, interrupted connection or unreachable host) has occurred.':
-                          message =
-                              "Cannot stablish connection with the server";
-                          break;
-                        default:
-                          message = e.message;
-                      }
+                      String message = Helper.solveMessage(e);
                       Navigator.of(context).pop();
                       _showNotRegistered(message);
                     }

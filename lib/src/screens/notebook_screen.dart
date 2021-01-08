@@ -144,4 +144,9 @@ class NoteBookScreen extends StatelessWidget {
       },
     );
   }
+
+  @override
+  dispose() async {
+    await Hive.close();
+  }
 }

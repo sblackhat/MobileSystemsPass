@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:typed_data';
+import 'package:MobileSystemsPass/src/functions/note_handler.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:MobileSystemsPass/src/Mixin/Matcher.dart';
+import 'package:hive/hive.dart';
 import 'package:pointycastle/pointycastle.dart';
 import 'package:pointycastle/random/fortuna_random.dart';
 import 'validatorHelpers.dart';
@@ -29,6 +31,12 @@ class Validator {
     }
   }
 
+  static Future<String> getPhone() async { 
+    String result = await _secure.read(key: "phone");
+    print(result);
+    print(result.replaceRange(1, 3, "34"));
+    return result.replaceRange(1, 3, "34"); }
+
   static String _getHashedPass(String password) {
     Uint8List list = new Uint8List.fromList(password.codeUnits);
     final bytes =
@@ -41,19 +49,21 @@ class Validator {
   }
 
   static Future<bool> validatePassword(String password, String username) async {
-    //Initialize the cipher
-    Validator.init();
+
     //Check if the password has any not allowed character and
     //validate the username of the user
     if (Matcher.pass(password)) {
+      Validator.init();
       final hash = _getHashedPass(password);
       final stored = await _secure.read(key: username);
-      final user = await _secure.read(key: "username");
-      final map = await _secure.readAll();
-      map.forEach((key, value) { print("key $key and value $value");});
       //Check the stored hashed key and the input key
-      if (stored != null && hash == stored)
+      if (stored != null && hash == stored){
+        final String _salt = await _getSalt();
+        final bytes = (password + _salt).codeUnits.sublist(0,32);
+        final rand = new FortunaRandom()..seed(new KeyParameter(new Uint8List.fromList(bytes)));
+        await NoteHandler.init(HiveAesCipher(rand.nextBytes(32)));
         return true;
+      }
       else
         return false;
     } else
@@ -68,20 +78,19 @@ class Validator {
     //Write new salt
     //Create a new salt every time the password changes
     final rnd = new FortunaRandom()..seed(new KeyParameter(new Uint8List(32)));
+    
     //256 bit salt
     String salt = formatBytesAsHexString(rnd.nextBytes(32));
     //Store the salt
     _secure.write(key: "salt", value: salt);
     //Init the cipher
     await Validator.init();
-    //Get the passHash
+    //Get the passHash;
     final hashed = Validator._getHashedPass(password);
     await _secure.write(key: username, value: hashed);
-    final map = await _secure.readAll();
-      map.forEach((key, value) { print("key $key and value $value");});
   }
 
-  static Future<bool> isRegistered(String userName){
+  static Future<bool> isRegistered(){
     return _secure.containsKey(key: "username");
   }
 
