@@ -5,13 +5,12 @@ import 'package:MobileSystemsPass/src/note/note.dart';
 
 class EditNote extends StatelessWidget {
   final int noteKey;
-   final String notesBox = "notesBox";
   EditNote({Key key, @required this.noteKey}) : super(key: key);
 
   final _formKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
-    Note note = Hive.box<Note>(notesBox)
+    Note note = Hive.box<Note>(Code.notesDB())
         .values
         .singleWhere((value) => value.key == noteKey);
     _titleController.text = note.title;
@@ -108,7 +107,7 @@ class EditNote extends StatelessWidget {
       note.title = _titleController.text;
       note.description = _descriptionController.text;
       note.dateUpdated = DateTime.now();
-      Box<Note> notes = Hive.box<Note>(notesBox);
+      Box<Note> notes = Hive.box<Note>(Code.notesDB());
       await notes.put(noteKey, note);
       Navigator.of(context).pop();
     }
@@ -117,7 +116,7 @@ class EditNote extends StatelessWidget {
   deleteNote(context) async {
     bool continueDelete = await alertConfirmDialog(context);
     if (continueDelete) {
-      Box<Note> notes = Hive.box<Note>(notesBox);
+      Box<Note> notes = Hive.box<Note>(Code.notesDB());
       await notes.delete(noteKey);
       Navigator.of(context).pop();
     }

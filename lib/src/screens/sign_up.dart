@@ -5,7 +5,6 @@ import 'package:MobileSystemsPass/src/screens/signup_success.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:MobileSystemsPass/src/captcha/captcha.dart';
-import 'package:flutter/semantics.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 
 class SignUp extends StatefulWidget {
@@ -66,7 +65,7 @@ class _SignUpState extends State<SignUp> with Helper{
                 selectorType: PhoneInputSelectorType.BOTTOM_SHEET,
               ),
               ignoreBlank: false,
-              autoValidateMode: AutovalidateMode.always,
+              autoValidateMode: AutovalidateMode.onUserInteraction,
               selectorTextStyle: TextStyle(color: Colors.black),
               textFieldController: _phoneNumberController,
               formatInput: false,

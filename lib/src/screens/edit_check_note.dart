@@ -18,11 +18,10 @@ class EditCheckNote extends StatefulWidget {
 class _EditCheckNoteState extends State<EditCheckNote> {
 
   final String appName = "Flutter Notes";
-  final String checkListNotesBox = "CheckListNotes";
 
   List<CheckListNote> checkListNote;
   loadNoteItems() {
-    checkListNote = Hive.box<CheckListNote>(checkListNotesBox)
+    checkListNote = Hive.box<CheckListNote>(Code.notesCheckDB())
         .values
         .where((value) => value.noteParent == widget.noteParent)
         .map((item) => item)
@@ -63,7 +62,7 @@ class _EditCheckNoteState extends State<EditCheckNote> {
                       item.done = value;
                       getUpdateItemInfo(item);
                       Box<CheckListNote> clNotes =
-                          Hive.box<CheckListNote>(checkListNotesBox);
+                          Hive.box<CheckListNote>(Code.notesCheckDB());
                       await clNotes.put(item.key, item);
                       Code().changeUpdatedDate(widget.noteParent);
                       setState(() {});
@@ -77,7 +76,7 @@ class _EditCheckNoteState extends State<EditCheckNote> {
                     icon: Icon(Icons.delete, size: 22, color: Colors.redAccent),
                     onPressed: () async {
                       Box<CheckListNote> clNotes =
-                          Hive.box<CheckListNote>(checkListNotesBox);
+                          Hive.box<CheckListNote>(Code.notesCheckDB());
                       await clNotes.delete(item.key);
                       Code().changeUpdatedDate(widget.noteParent);
                       loadNoteItems();
@@ -94,7 +93,7 @@ class _EditCheckNoteState extends State<EditCheckNote> {
         child: Icon(Icons.add),
         onPressed: () async {
           Box<CheckListNote> clNotes =
-              Hive.box<CheckListNote>(checkListNotesBox);
+              Hive.box<CheckListNote>(Code.notesCheckDB());
           reorderNoteItems(clNotes);
           await clNotes.add(CheckListNote("", false, 0, widget.noteParent));
           Code().changeUpdatedDate(widget.noteParent);
@@ -106,7 +105,7 @@ class _EditCheckNoteState extends State<EditCheckNote> {
   }
 
   reorderNotesNewPosition(oldIndex, newIdenx) async {
-    Box<CheckListNote> clNotes = Hive.box<CheckListNote>(checkListNotesBox);
+    Box<CheckListNote> clNotes = Hive.box<CheckListNote>(Code.notesCheckDB());
     if (oldIndex < newIdenx) {
       checkListNote[oldIndex].position = newIdenx - 1;
       clNotes.put(checkListNote[oldIndex].key, checkListNote[oldIndex]);
@@ -134,7 +133,7 @@ class _EditCheckNoteState extends State<EditCheckNote> {
   }
 
   getUpdateItemInfo(CheckListNote item) {
-    item = Hive.box<CheckListNote>(checkListNotesBox)
+    item = Hive.box<CheckListNote>(Code.notesCheckDB())
         .values
         .singleWhere((value) => value.key == item.key);
   }
@@ -149,7 +148,7 @@ class CheckListItemText extends StatelessWidget {
   final TextEditingController _textController = TextEditingController();
   @override
   Widget build(BuildContext context) {
-    CheckListNote checkListItem = Hive.box<CheckListNote>("CheckListNotesItemsDB")
+    CheckListNote checkListItem = Hive.box<CheckListNote>(Code.notesCheckDB())
         .values
         .singleWhere((value) => value.key == itemID);
     _textController.text = checkListItem.text;
@@ -160,7 +159,7 @@ class CheckListItemText extends StatelessWidget {
       maxLines: 999,
       onChanged: (value) async {
         checkListItem.text = value;
-        Box<CheckListNote> clNotes = Hive.box<CheckListNote>("CheckListNotesItemsDB");
+        Box<CheckListNote> clNotes = Hive.box<CheckListNote>(Code.notesCheckDB());
         await clNotes.put(checkListItem.key, checkListItem);
         Code().changeUpdatedDate(noteParent);
       },

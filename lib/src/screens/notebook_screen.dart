@@ -1,3 +1,4 @@
+import 'package:MobileSystemsPass/src/screens/change_user.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
@@ -8,22 +9,56 @@ import 'package:MobileSystemsPass/src/screens/edit_check_note.dart';
 import 'package:MobileSystemsPass/src/screens/edit_note.dart';
 import 'package:MobileSystemsPass/src/screens/edit_text_note.dart';
 
+import '../functions/code.dart';
+import 'change_pass.dart';
+import 'change_phone.dart';
+
 class NoteBookScreen extends StatelessWidget {
-  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text("NoteBook"),
+      appBar: AppBar(
+        title: Text("NoteBook"),
+      ),
+      body: getNotes(),
+      floatingActionButton: addNoteButton(),
+      drawer: Drawer(
+        child: ListView(
+          children: [
+            DrawerHeader(
+              child: Text(
+                'Change user details',
+                style: TextStyle(fontSize: 20),
+                textAlign: TextAlign.center,
+              ),
+              decoration: BoxDecoration(
+                color: Color(0x37474F),
+              ),
+            ),
+            ListTile(
+                title: Text('UserName',style: TextStyle(fontSize: 16,),textAlign: TextAlign.center,),
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => ChangeUser()));
+                }),
+             ListTile(
+                title: Text('Password',style: TextStyle(fontSize: 16,),textAlign: TextAlign.center,),
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => ChangePass()));
+                }),
+            ListTile(
+                title: Text('Phone',style: TextStyle(fontSize: 16,),textAlign: TextAlign.center,),
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => ChangePhone()));
+                }),
+          ],
         ),
-        body: getNotes(),
-        floatingActionButton: addNoteButton(),
-      );
+      ),
+    );
   }
 
   getNotes() {
     return ValueListenableBuilder(
-      valueListenable: Hive.box<Note>("notesBox").listenable(),
+      valueListenable: Hive.box<Note>(Code.notesDB()).listenable(),
       builder: (context, Box<Note> box, _) {
         if (box.values.isEmpty) {
           return Center(
@@ -45,7 +80,7 @@ class NoteBookScreen extends StatelessWidget {
   }
 
   reorderNotes(oldIndex, newIdenx, notes) async {
-    Box<Note> hiveBox = Hive.box<Note>("notesBox");
+    Box<Note> hiveBox = Hive.box<Note>(Code.notesDB());
     if (oldIndex < newIdenx) {
       notes[oldIndex].position = newIdenx - 1;
       await hiveBox.put(notes[oldIndex].key, notes[oldIndex]);
@@ -65,7 +100,7 @@ class NoteBookScreen extends StatelessWidget {
 
   getNotesList() {
     //get notes as a List
-    List<Note> notes = Hive.box<Note>("notesBox").values.toList();
+    List<Note> notes = Hive.box<Note>(Code.notesDB()).values.toList();
     notes = getNotesSortedByOrder(notes);
     return notes;
   }
@@ -145,7 +180,6 @@ class NoteBookScreen extends StatelessWidget {
     );
   }
 
-  @override
   dispose() async {
     await Hive.close();
   }

@@ -3,6 +3,8 @@ import 'package:MobileSystemsPass/src/Mixin/Matcher.dart';
 import 'package:MobileSystemsPass/src/validator/UI_validator.dart';
 import 'package:rxdart/rxdart.dart';
 
+import '../functions/code.dart';
+
 class LoginBloc with Matcher {
   //Variables declaration in the BLOC
   
@@ -69,7 +71,7 @@ class LoginBloc with Matcher {
     return StreamTransformer<String, String>.fromHandlers( 
     handleData: (String password, EventSink<String> sink) { 
       //Check if the password is at leat 20 characters long
-    if (password.length > 20){ 
+    if (password.length >= 20){ 
         sink.add(password); 
     } else if (password.isEmpty || password == null){
       //If the password field is empty 
@@ -91,8 +93,8 @@ class LoginBloc with Matcher {
 
   
   Future<bool> submitLogin() async {
-
-      bool result = await Validator.validatePassword(_passwordController.value, _userNameController.value);
+      Code.init();
+      bool result = await Validator.validatePassword(_passwordController.value,username: _userNameController.value);
 
       return result;
     }

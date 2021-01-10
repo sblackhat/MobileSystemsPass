@@ -15,7 +15,7 @@ class EditTextNote extends StatefulWidget {
 
 class _EditTextNoteState extends State<EditTextNote> {
   TextNote textNote;
-  final String textNotesBox = "textNotesBox";
+  final String textNotesBox = Code.notesTextDB();
 
 
   @override

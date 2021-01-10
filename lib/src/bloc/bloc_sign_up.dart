@@ -3,6 +3,8 @@ import 'package:MobileSystemsPass/src/Mixin/Matcher.dart';
 import 'package:MobileSystemsPass/src/validator/UI_validator.dart';
 import 'package:rxdart/rxdart.dart';
 
+import '../functions/code.dart';
+
 class SignUpBloc with Matcher {
   //Variable declaration
   static bool _verify = false;
@@ -98,7 +100,7 @@ class SignUpBloc with Matcher {
         handleData: (String password, EventSink<String> sink) {
       //Check if the password does not contain special characters
       if (Matcher.pass(password)) {
-        if (password.length > 20)
+        if (password.length >= 20)
           sink.add(password);
         else
           sink.addError("The password should be at least 20 characters long");
@@ -136,13 +138,14 @@ class SignUpBloc with Matcher {
         return false; 
  });
   
-  void register() => Validator.registerUserName(_userNameController.value,_passwordRegistrationController.value, _validPhone.value);
-
+  void register() {
+    Code.setNames("notesDB0","textnotesDB0","checknotesDB0",version: 0);
+    Validator.registerUserName(username: _userNameController.value,password : _passwordRegistrationController.value, phone: _validPhone.value);
+  }
   Future<bool> isRegistered() async {
     return await Validator.isRegistered();
   }
 
-  @override
   void dispose() {
      _validPassRegistration.close();
     _passwordRegistrationController.close();

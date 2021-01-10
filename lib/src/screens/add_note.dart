@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:MobileSystemsPass/src/note/note.dart';
 
+import '../functions/code.dart';
+
 
 class AddNote extends StatelessWidget {
 
@@ -110,11 +112,11 @@ final String notesBox = "FlutterNotesDB";
 
   createTextNote(BuildContext context) async {
     if (_formKey.currentState.validate()) {
-      Box<Note> notes = Hive.box<Note>("notesBox");
+      Box<Note> notes = Hive.box<Note>(Code.notesDB());
       reorderNotes(notes);
       int pk = await notes.add(Note(DateTime.now(), _titleController.text,
           _descriptionController.text, DateTime.now(), NoteType.Text, 0));
-      Box<TextNote> tNotes = Hive.box<TextNote>("textNotesBox");
+      Box<TextNote> tNotes = Hive.box<TextNote>(Code.notesTextDB());
       await tNotes.add(TextNote("", pk));
       Navigator.of(context).pop();
     }
@@ -122,11 +124,11 @@ final String notesBox = "FlutterNotesDB";
 
   createCheckListNote(BuildContext context) async {
     if (_formKey.currentState.validate()) {
-      Box<Note> notes = Hive.box<Note>("notesBox");
+      Box<Note> notes = Hive.box<Note>(Code.notesDB());
       reorderNotes(notes);
       int pk = await notes.add(Note(DateTime.now(), _titleController.text,
           _descriptionController.text, DateTime.now(), NoteType.CheckList, 0));
-      Box<CheckListNote> clNotes = Hive.box<CheckListNote>("CheckListNotes");
+      Box<CheckListNote> clNotes = Hive.box<CheckListNote>(Code.notesCheckDB());
       await clNotes.add(CheckListNote("", false, 0, pk));
       Navigator.of(context).pop();
     }

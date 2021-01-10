@@ -88,6 +88,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget userNameField(BuildContext context, dynamic snapshot) {
     return TextField(
+      maxLength: 40,
       controller: _userController,
       decoration: InputDecoration(
         labelText: 'User',
@@ -126,7 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
               textColor: Theme.of(context).accentColor,
               child: Center(
                   child: snapshot.data == 0
-                      ? Text('Register')
+                      ? Text('Submit',)
                       : Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[

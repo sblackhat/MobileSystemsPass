@@ -18,7 +18,7 @@ class RegisterScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text(
-              "You are Logged in succesfully",
+              "Successfuly registered in the notebook!",
               style: TextStyle(color: Colors.lightBlue, fontSize: 32),
             ),
             SizedBox(
