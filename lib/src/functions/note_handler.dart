@@ -13,7 +13,6 @@ class NoteHandler{
     Hive.registerAdapter(NoteTypeAdapter());
     Hive.registerAdapter(CheckListNoteAdapter());
     Hive.registerAdapter(TextNoteAdapter());
-    print(Code.notesDB());
     await Hive.openBox<Note>(Code.notesDB(), encryptionCipher: cipher);//if it's the first time running, it will also create the "Box", else it will just open
     await Hive.openBox<TextNote>(Code.notesTextDB(), encryptionCipher: cipher);//this box will be used later for the Text Type entries
     await Hive.openBox<CheckListNote>(Code.notesCheckDB(), encryptionCipher: cipher);//this box will be used later for the Check List Type entries
@@ -51,13 +50,10 @@ class NoteHandler{
 
    //Create the new boxes
   await Code.increaseVersion();
-  print("heeeee");
-  print(Code.notesDB());
    await Hive.openBox<Note>(Code.notesDB(), encryptionCipher: cipher);//if it's the first time running, it will also create the "Box", else it will just open
    await Hive.openBox<TextNote>(Code.notesTextDB(), encryptionCipher: cipher);//this box will be used later for the Text Type entries
    await Hive.openBox<CheckListNote>(Code.notesCheckDB(), encryptionCipher: cipher);//this box will be used later for the Check List Type entries
    Box<Note> notes2 = Hive.box(Code.notesDB());
-   print(Code.notesCheckDB());
    Box<TextNote> textnotes2 = Hive.box(Code.notesTextDB());
    Box<CheckListNote> checklist2 = Hive.box(Code.notesCheckDB());
    //Copy all the contents

@@ -27,9 +27,9 @@ class Code {
     _version = prefs.getInt("version");
   }
 
-  static String notesDB() { print(_notes_db); return _notes_db;}
-  static String notesTextDB()  {print(_text_notes_db); return _text_notes_db;}
-  static String notesCheckDB() {print(_checklist_notes_db);return _checklist_notes_db;}
+  static String notesDB() { return _notes_db;}
+  static String notesTextDB()  {return _text_notes_db;}
+  static String notesCheckDB() {return _checklist_notes_db;}
   
 
   static Future<void> increaseVersion() async {

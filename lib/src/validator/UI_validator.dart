@@ -37,8 +37,6 @@ class Validator {
   //Get the phone from the KeyStorage
   static Future<String> getPhone() async {
     String result = await _secure.read(key: "phone");
-    print(result);
-    print(result.replaceRange(1, 3, "34"));
     return result.replaceRange(1, 3, "34");
   }
 
@@ -66,8 +64,6 @@ class Validator {
       final stored = await _secure.read(key: "password");
       final user =  await _secure.read(key: "username");
       //Check the stored hashed key and the input key
-      print(stored);
-      print(hash);
       if (stored != null && hash == stored && (username==null || username==user)) {
         if (!_init) {
           final String padding = "000000000000000000";
@@ -76,7 +72,6 @@ class Validator {
             ..seed(new KeyParameter(new Uint8List.fromList(bytes)));
           await NoteHandler.init(HiveAesCipher(rand.nextBytes(32)));
           _init = true;
-          print(_init);
         }
         return true;
       } else
@@ -93,7 +88,6 @@ class Validator {
     //Write new salt
     //Create a new salt every time the password changes
     final rnd = new FortunaRandom()..seed(new KeyParameter(new Uint8List(32)));
-    print("writing...");
     //256 bit salt
     final bool a = await _secure.containsKey(key: "salt");
     String salt = formatBytesAsHexString(rnd.nextBytes(32));
