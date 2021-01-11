@@ -37,7 +37,7 @@ class Validator {
   //Get the phone from the KeyStorage
   static Future<String> getPhone() async {
     String result = await _secure.read(key: "phone");
-    return result.replaceRange(1, 3, "34");
+    return result;
   }
 
   //Returns the hashed password

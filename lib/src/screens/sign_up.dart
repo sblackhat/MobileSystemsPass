@@ -209,8 +209,7 @@ class _SignUpState extends State<SignUp> with Helper{
       //Check if the user has verified the CAPTCHA
       var registered = await _bloc.isRegistered();
       if (_bloc.getVerify && ! registered) {
-        var resul = "+34" + _phoneNumberController.value.text;
-        _registerUser(resul, context);
+        _registerUser(_phoneNumberController.value.text, context);
         _timerStream.sink.add(30);
         _activeCounter();
       } else if (registered) {
