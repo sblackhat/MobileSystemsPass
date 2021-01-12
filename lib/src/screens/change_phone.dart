@@ -182,27 +182,32 @@ class _ChangePhoneState extends State<ChangePhone> {
                 ),
               ),
                StreamBuilder(
-      stream: _timerStream.stream,
-      builder: (BuildContext context, AsyncSnapshot snapshot) {
-        return Center(
-                child: RaisedButton(
-                  onPressed: _validateInputs,
-                  elevation: 0.0,
-                  color: Colors.blue,
-                  disabledColor: Colors.grey,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.0)),
-                  child: Padding(
-                    padding:
-                        EdgeInsets.symmetric(vertical: 14.0, horizontal: 24.0),
-                    child: Text(
-                      ' Resend OTP in ${snapshot.hasData ? snapshot.data.toString() : 30} seconds ',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ),
-              );}
-               ),
+                stream: _timerStream.stream,
+                builder: (BuildContext context, AsyncSnapshot snapshot) {
+                  return Center(
+                          child: RaisedButton(
+                            onPressed: (snapshot.data == 0)
+                            ? () {
+                                _init = false;
+                                _validateInputs();
+                              }
+                            : null,
+                            elevation: 0.0,
+                            color: Colors.blue,
+                            disabledColor: Colors.grey,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30.0)),
+                            child: Padding(
+                              padding:
+                                  EdgeInsets.symmetric(vertical: 14.0, horizontal: 24.0),
+                              child: Text(
+                                ' Resend OTP in ${snapshot.hasData ? snapshot.data.toString() : 30} seconds ',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        );}
+                        ),
             ],
           ),
         ),
