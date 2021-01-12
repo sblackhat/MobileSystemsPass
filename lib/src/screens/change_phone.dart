@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -14,10 +16,30 @@ class _ChangePhoneState extends State<ChangePhone> {
   final TextEditingController _newphone = TextEditingController();
   bool _validated = false;
 
+  //Manage the OTP button
+  static const _timerDuration = 30;
+  StreamController _timerStream = new StreamController<int>();
+  int timerCounter;
+  Timer _resendCodeTimer;
+  bool _init = true;
+
+  _activeCounter() {
+    _resendCodeTimer = new Timer.periodic(Duration(seconds: 1), (Timer timer) {
+      if (_timerDuration - timer.tick > 0 && !_init)
+        _timerStream.sink.add(_timerDuration - timer.tick);
+      else {
+        _timerStream.sink.add(0);
+        _resendCodeTimer.cancel();
+      }
+    });
+  }
+
+
   Future<void> _validateInputs() async {
     if (_validated && _formKey.currentState.validate()) {
       print(_newphone.text);
-      _registerUser(_newphone.text, context);
+      String old = await Validator.getPhone();
+      _registerUser(old, context);
     }else{
       _showResult("Cannot change the phone number", "Check the phone number you wrote");
     }
@@ -115,6 +137,7 @@ class _ChangePhoneState extends State<ChangePhone> {
 
   @override
   void initState() {
+    _activeCounter();
     super.initState();
   }
 
@@ -158,7 +181,10 @@ class _ChangePhoneState extends State<ChangePhone> {
                   ),
                 ),
               ),
-              Center(
+               StreamBuilder(
+      stream: _timerStream.stream,
+      builder: (BuildContext context, AsyncSnapshot snapshot) {
+        return Center(
                 child: RaisedButton(
                   onPressed: _validateInputs,
                   elevation: 0.0,
@@ -170,12 +196,13 @@ class _ChangePhoneState extends State<ChangePhone> {
                     padding:
                         EdgeInsets.symmetric(vertical: 14.0, horizontal: 24.0),
                     child: Text(
-                      "Submit Changes",
+                      ' Resend OTP in ${snapshot.hasData ? snapshot.data.toString() : 30} seconds ',
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
                 ),
-              ),
+              );}
+               ),
             ],
           ),
         ),

@@ -6,7 +6,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:MobileSystemsPass/src/captcha/captcha.dart';
 import 'package:flutter/services.dart';
-import 'package:pointycastle/random/fortuna_random.dart';
 import 'package:flutter_safetynet_attestation/flutter_safetynet_attestation.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 
