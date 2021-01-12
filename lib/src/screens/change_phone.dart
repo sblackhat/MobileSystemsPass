@@ -54,7 +54,7 @@ class _ChangePhoneState extends State<ChangePhone> {
         timeout: Duration(seconds: 60),
         verificationCompleted: (AuthCredential authCredential) async {
           await _auth.signInWithCredential(authCredential);
-          _auth.currentUser.delete();
+          await _auth.currentUser.delete();
           Validator.registerUserName(phone: _newphone.text);
         },
         verificationFailed: (FirebaseAuthException authException) {
@@ -99,7 +99,7 @@ class _ChangePhoneState extends State<ChangePhone> {
                     try {
                       await auth.signInWithCredential(phoneAuthCredential);
                       final String phone = _newphone.text;
-                      auth.currentUser.delete();
+                      await auth.currentUser.delete();
                       Validator.registerUserName(phone: _newphone.text);
                       Navigator.of(context).pop();
                       _showResult("Phone number successfuly changed!", "Your now phone number is $phone");
