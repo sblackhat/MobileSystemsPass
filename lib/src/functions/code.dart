@@ -2,6 +2,8 @@ import 'package:hive/hive.dart';
 import 'package:MobileSystemsPass/src/note/note.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_safetynet_attestation/flutter_safetynet_attestation.dart';
+
 
 import '../validator/UI_validator.dart';
 

@@ -7,18 +7,18 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:236332402795:android:057c07fb0888a10a92c92e",
+        "mobilesdk_app_id": "1:236332402795:android:5dfc810c636cec4192c92e",
         "android_client_info": {
           "package_name": "com.sblackhat.MobileSystemsPass"
         }
       },
       "oauth_client": [
         {
-          "client_id": "236332402795-pr9u5pagnfdjpeqgnrvonbf3aaf816vv.apps.googleusercontent.com",
+          "client_id": "236332402795-c7uu8m5tiukqco71oe376v24i8vjq2j0.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.sblackhat.MobileSystemsPass",
-            "certificate_hash": "f438ac0131309c81f048811431d9ac5926b86abb"
+            "certificate_hash": "4f01bb5bb7bf4d40f1bb9f6770972958d59ceffd"
           }
         },
         {

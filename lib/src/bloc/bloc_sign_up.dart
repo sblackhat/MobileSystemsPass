@@ -50,6 +50,8 @@ class SignUpBloc with Matcher {
 
   set setPhoneNumber(bool phone) => _phone = phone;
 
+  String get getPhone => _validPhone.value;
+
   PublishSubject<bool> get validUserName => _validUserName;
 
   final BehaviorSubject _userNameController = BehaviorSubject<String>(); 
@@ -74,6 +76,8 @@ class SignUpBloc with Matcher {
           } 
           ); 
  } 
+
+  String getRandom() => Validator.getRandom();
 
   final BehaviorSubject _passwordRegistrationController =
       BehaviorSubject<String>();
@@ -133,7 +137,7 @@ class SignUpBloc with Matcher {
 
   Stream<bool> get registerValid => Rx.combineLatest3(_validUserName.stream, _validPassRegistration.stream, _validPassRepeat.stream, (isValidUser, isPasswordValid, isRepeatValid) { 
         if( isValidUser is bool && isPasswordValid is bool && isRepeatValid) { 
-            return isPasswordValid && isValidUser && isRepeatValid && _phone; 
+            return isPasswordValid && isValidUser && isRepeatValid && _phone && _validPhone.hasValue; 
         } 
         return false; 
  });

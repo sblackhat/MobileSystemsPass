@@ -5,7 +5,11 @@ import 'package:MobileSystemsPass/src/screens/signup_success.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:MobileSystemsPass/src/captcha/captcha.dart';
+import 'package:flutter/services.dart';
+import 'package:pointycastle/random/fortuna_random.dart';
+import 'package:flutter_safetynet_attestation/flutter_safetynet_attestation.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
+
 
 class SignUp extends StatefulWidget {
   @override
@@ -26,10 +30,29 @@ class _SignUpState extends State<SignUp> with Helper{
   TextEditingController _userNameController = TextEditingController();
   TextEditingController _phoneNumberController = TextEditingController();
 
+  GooglePlayServicesAvailability _gmsStatus;
+
   @override
   void initState() {
     _activeCounter();
+    initPlatformState();
     super.initState();
+  }
+
+  Future<void> initPlatformState() async {
+    GooglePlayServicesAvailability gmsAvailability;
+    try {
+      gmsAvailability =
+          await FlutterSafetynetAttestation.googlePlayServicesAvailability();
+    } on PlatformException {
+      gmsAvailability = null;
+    }
+
+    if (!mounted) return;
+
+    setState(() {
+      _gmsStatus = gmsAvailability;
+    });
   }
 
   _activeCounter() {
@@ -209,13 +232,39 @@ class _SignUpState extends State<SignUp> with Helper{
       //Check if the user has verified the CAPTCHA
       var registered = await _bloc.isRegistered();
       if (_bloc.getVerify && ! registered) {
-        _registerUser(_phoneNumberController.value.text, context);
+        print(_bloc.getPhone);
+        bool safeNet = await _requestSafetyNetAttestation();
+        if(safeNet) _registerUser(_bloc.getPhone, context);
         _timerStream.sink.add(30);
         _activeCounter();
       } else if (registered) {
-        _showNotRegistered("You are already registered in this notebook");
+        _showDialog('Registration Failed',"You are already registered in this notebook");
       } else
-        _showNotVerified(); //Show the not verified alertDialog
+        _showDialog('Click the I am not a robot button',"You have not verified the captcha"); //Show the not verified alertDialog
+  }
+
+  Future<bool> _requestSafetyNetAttestation() async {
+    String dialogTitle, dialogMessage;
+    try {
+      String rand = _bloc.getRandom();
+      JWSPayload res =
+          await FlutterSafetynetAttestation.safetyNetAttestationPayload(
+              rand);
+      if(!res.ctsProfileMatch){
+        dialogMessage = solveResponse(res);
+        _showDialog("ERROR! Your device cannot use this app", dialogMessage);
+      }
+      return true;
+    } catch (e) {
+      dialogTitle = 'ERROR!';
+      if (e is PlatformException) {
+        dialogMessage = e.message;
+      } else {
+        dialogMessage = e?.toString();
+      }
+      _showDialog(dialogTitle, dialogMessage);
+    return false;
+    }
   }
 
   Future _registerUser(String mobile, BuildContext context) async {
@@ -236,7 +285,7 @@ class _SignUpState extends State<SignUp> with Helper{
           _clearSignUp(); //Clear the UI details
         },
         verificationFailed: (FirebaseAuthException authException) {
-          _showNotRegistered(authException.message);
+          _showDialog("Registration Failed!",authException.message);
         },
         codeSent: (String verID, int forceResendingToken) =>
             _codeSent(verID, forceResendingToken),
@@ -249,6 +298,12 @@ class _SignUpState extends State<SignUp> with Helper{
     var captcha = CaptchaPage();
     captcha.setBloc(_bloc);
     Navigator.push(context, MaterialPageRoute(builder: (context) => captcha));
+  }
+
+  String solveResponse(JWSPayload response){
+    if(response.basicIntegrity)
+      return "Your device has an unlocked bootloader or custom ROM";
+    else return "Emulated device or rooted device";
   }
 
   Widget recaptchaButton() {
@@ -277,38 +332,15 @@ class _SignUpState extends State<SignUp> with Helper{
     ]);
   }
 
-  Future<void> _showNotVerified() async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Click the I am not a robot button'),
-          content: SingleChildScrollView(
-            child: Text('You have not verified the captcha'),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  _showNotRegistered(String message) {
+  _showDialog(String dialogTitle , String dialogMessage ) {
     return showDialog<void>(
         context: context,
         barrierDismissible: false,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('Registration Failed'),
+            title: Text(dialogTitle),
             content: SingleChildScrollView(
-              child: Text('$message'),
+              child: Text('$dialogMessage'),
             ),
             actions: <Widget>[
               TextButton(
@@ -352,6 +384,7 @@ class _SignUpState extends State<SignUp> with Helper{
                         PhoneAuthProvider.credential(
                             verificationId: verificationId, smsCode: smsCode);
                     try {
+                      print(_phoneNumberController.text);
                       await auth.signInWithCredential(phoneAuthCredential);
                       // Sign the user in with the credential
                       _clearSignUp();
@@ -364,8 +397,9 @@ class _SignUpState extends State<SignUp> with Helper{
                                   RegisterScreen(user: auth.currentUser)));
                     } catch (e) {
                       String message = Helper.solveMessage(e);
+                      print(message);
                       Navigator.of(context).pop();
-                      _showNotRegistered(message);
+                      _showDialog("Registration Failed!",message);
                     }
                   },
                 )

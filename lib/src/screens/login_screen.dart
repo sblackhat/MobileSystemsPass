@@ -1,13 +1,14 @@
 import 'dart:async';
 
 import 'package:MobileSystemsPass/src/Mixin/helpers.dart';
-import 'package:MobileSystemsPass/src/functions/note_handler.dart';
 import 'package:MobileSystemsPass/src/screens/sign_up.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:MobileSystemsPass/src/bloc/bloc_log_in.dart';
-import 'package:MobileSystemsPass/src/captcha/captcha.dart';
 import 'package:MobileSystemsPass/src/screens/notebook_screen.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_safetynet_attestation/flutter_safetynet_attestation.dart';
+
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -19,18 +20,38 @@ class _LoginScreenState extends State<LoginScreen> {
   TextEditingController _passController = TextEditingController();
   TextEditingController _userController = TextEditingController();
   //Manage the OTP button
+   GooglePlayServicesAvailability _gmsStatus;
   static const _timerDuration = 30;
   StreamController _timerStream = new StreamController<int>();
   int timerCounter;
   Timer _resendCodeTimer;
+  
 
   bool _init = true;
 
   @override
   void initState() {
     _activeCounter();
+    initPlatformState();
     super.initState();
   }
+
+  Future<void> initPlatformState() async {
+    GooglePlayServicesAvailability gmsAvailability;
+    try {
+      gmsAvailability =
+          await FlutterSafetynetAttestation.googlePlayServicesAvailability();
+    } on PlatformException {
+      gmsAvailability = null;
+    }
+
+    if (!mounted) return;
+
+    setState(() {
+      _gmsStatus = gmsAvailability;
+    });
+  }
+
 
   _activeCounter() {
     _resendCodeTimer = new Timer.periodic(Duration(seconds: 1), (Timer timer) {
@@ -146,15 +167,15 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Future<void> _showWrongPass() async {
+  Future<void> _showDialog(String dialogTitle,String dialogMessage) async {
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Wrong username/password'),
+          title: Text(dialogTitle),
           content: SingleChildScrollView(
-            child: Text('You have introduced the wrong password/username.'),
+            child: Text(dialogMessage),
           ),
           actions: <Widget>[
             TextButton(
@@ -169,35 +190,43 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Future<void> _showNotVerified() async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Click the CAPTCHA button'),
-          content: SingleChildScrollView(
-            child: Text('You have not verified the captcha'),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
+  Future<bool> _requestSafetyNetAttestation() async {
+    String dialogTitle, dialogMessage;
+    try {
+      String rand = _bloc.getRandom();
+      JWSPayload res =
+          await FlutterSafetynetAttestation.safetyNetAttestationPayload(
+              rand);
+      if(!res.ctsProfileMatch){
+        dialogMessage = solveResponse(res);
+        _showDialog("ERROR! Your device cannot use this app", dialogMessage);
+      }
+      return true;
+    } catch (e) {
+      dialogTitle = 'ERROR!';
+      if (e is PlatformException) {
+        dialogMessage = e.message;
+      } else {
+        dialogMessage = e?.toString();
+      }
+      _showDialog(dialogTitle, dialogMessage);
+    return false;
+    }
+  }
+
+   String solveResponse(JWSPayload response){
+    if(response.basicIntegrity)
+      return "Your device has an unlocked bootloader or custom ROM";
+    else return "Emulated device or rooted device";
   }
 
   Future<void> _onPressSubmit(context) async {
     bool _registered = await _bloc.isRegistered();
     if (_registered) {
-        _logInUser(context); 
+        bool res = await _requestSafetyNetAttestation();
+        if(res) _logInUser(context); 
     } else
-      _showNotRegistered("Not registered yet? Sign up");
+      _showDialog("Log In Failed","Not registered yet? Sign up");
   }
 
   _goToNoteScreen(context) {
@@ -275,7 +304,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         } else {
                           //Show the wrongPassword dialog
                           Navigator.of(context).pop();
-                          _showWrongPass();
+                          _showDialog("Wrong username/password","You have introduced the wrong password/username.");
                           _timerStream.sink.add(30);
                           _activeCounter();
                         }
@@ -285,7 +314,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Navigator.of(context).pop();
                       _timerStream.sink.add(30);
                       _activeCounter();
-                      _showNotRegistered(message);
+                      _showDialog("Log In Failed",message);
                     }
                   },
                 )
@@ -309,39 +338,17 @@ class _LoginScreenState extends State<LoginScreen> {
             _goToNoteScreen(context);
           } else {
             //Show the wrongPassword dialog
-            _showWrongPass();
+            _showDialog("Wrong username/password", "You have introduced the wrong password/username.");
           }
         },
         verificationFailed: (FirebaseAuthException authException) {
-          _showNotRegistered(authException.message);
+          _showDialog("Log In Failed",authException.message);
         },
         codeSent: (String verID, int forceResendingToken) async {
           _codeSent(verID, forceResendingToken);
         },
         codeAutoRetrievalTimeout: (String verificationId) {
           print("Timeout");
-        });
-  }
-
-  _showNotRegistered(String message) {
-    return showDialog<void>(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Log In Failed'),
-            content: SingleChildScrollView(
-              child: Text('$message'),
-            ),
-            actions: <Widget>[
-              TextButton(
-                child: Text('OK'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
         });
   }
 

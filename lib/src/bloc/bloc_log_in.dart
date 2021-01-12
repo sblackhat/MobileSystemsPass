@@ -91,6 +91,7 @@ class LoginBloc with Matcher {
         return false; 
  });
 
+   String getRandom() => Validator.getRandom();
   
   Future<bool> submitLogin() async {
       Code.init();

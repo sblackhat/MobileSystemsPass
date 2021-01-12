@@ -6,7 +6,6 @@ import 'package:MobileSystemsPass/src/Mixin/Matcher.dart';
 import 'package:hive/hive.dart';
 import 'package:pointycastle/pointycastle.dart';
 import 'package:pointycastle/random/fortuna_random.dart';
-import '../functions/code.dart';
 import '../functions/note_handler.dart';
 import 'validatorHelpers.dart';
 
@@ -38,6 +37,11 @@ class Validator {
   static Future<String> getPhone() async {
     String result = await _secure.read(key: "phone");
     return result;
+  }
+
+  static String getRandom(){
+    final rnd = new FortunaRandom()..seed(new KeyParameter(new Uint8List(32)));
+    return rnd.toString();
   }
 
   //Returns the hashed password
