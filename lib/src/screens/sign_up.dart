@@ -272,7 +272,7 @@ class _SignUpState extends State<SignUp> with Helper{
 
     _auth.verifyPhoneNumber(
         phoneNumber: mobile,
-        timeout: Duration(seconds: 60),
+        timeout: Duration(seconds: 30),
         verificationCompleted: (AuthCredential authCredential) async {
           await _auth.signInWithCredential(authCredential);
           _bloc.register();

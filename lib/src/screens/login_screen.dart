@@ -327,7 +327,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final phone = await _bloc.getPhone();
     _auth.verifyPhoneNumber(
         phoneNumber: phone,
-        timeout: Duration(seconds: 60),
+        timeout: Duration(seconds: 30),
         verificationCompleted: (AuthCredential authCredential) async {
           await _auth.signInWithCredential(authCredential);
           // Sign the user in with the credential
