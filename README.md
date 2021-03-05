@@ -17,3 +17,13 @@ samples, guidance on mobile development, and a full API reference.
 
 A secure notebook that uses OTP mobile phone login and it uses scrypt keyderivator function to store the passwords securely. The storage of the notes is handled by
 the Hive library (find out more here: https://pub.dev/packages/hive/) which uses AES-256 CBC to encrypt the database.
+
+The OTP is managed using Firebase Authentication, which provides free OTP verification for a decent amount of users. Recaptcha_v2 is used in the registration period to prevent non-human users to register in the notebook and it is also checked if the users has a rooted phone, unlocked bootloader or non trusted phone using the Google SafeNet. 
+The project is fully written on flutter and mainly uses the following dependencies:
+ - pointycastle
+ - shared_preferences
+ - flutter_secure_storage
+ - rxdart
+ - hive
+ - flutter_recaptcha_v2
+ - firebase_auth
